@@ -1,0 +1,233 @@
+---
+title: "Lightning talk"
+author: "Paige Amos"
+date: "10/11/2021"
+output: pdf_document
+---
+
+#### Load required libraries
+
+```{r}
+library(here)
+library(LambertW)
+library(patchwork)
+library(tidyverse)
+```
+
+
+# Code for Preliminary Data from paige
+
+```{r}
+tube_growth = read_csv(here("./data/tube-growth.csv"))
+knitr::kable(tube_growth, caption = "Tube growth rates of all marked worms in various treatments.")
+
+tank_conditions = read_csv(here("./data/tank-conditions.csv"))
+knitr::kable(tank_conditions, caption = "Tank conditions of all treatment tanks over course of experiment.")
+
+mortality = read_csv(here("./data/mortality.csv"))
+knitr::kable(mortality, caption = "Mortality of worms in all treatments.")
+```
+
+GENAS reading 
+```{r}
+library(readr)
+mortality <- read_csv("mortality.csv")
+View(mortality)
+tank_conditions <- read_csv("tank-conditions.csv")
+View(tank_conditions)
+tube_growth <- read_csv("tube-growth.csv")
+View(tube_growth)
+```
+
+
+
+
+
+## Make scatterplot for growth of each worm
+```{r}
+clean_tube_growth <- tube_growth %>%
+  select(worm_id, treatment, growth_1, growth_2, growth_3) %>%
+  pivot_longer(!c(worm_id, treatment),
+               names_to = "timestep",
+               values_to = "growth")
+
+ggplot(data = clean_tube_growth, aes(x = timestep, y = growth, colour = worm_id)) +
+  geom_point() +
+  geom_line()
+```
+
+## Make a boxplot for final growth
+```{r}
+my_cols = c("low_salinity" = "cadetblue", "high_temp" = "rosybrown", "control" = "tan")
+
+
+
+boxplot = ggplot(tube_growth, aes(x = treatment, y = total_growth_DS, fill = treatment)) +
+  geom_boxplot(alpha = 0.8) +
+  scale_color_manual(values = my_cols) +
+    scale_fill_manual(values = my_cols)+ 
+  theme_classic() + ylab("Total growth (mm)") +
+  xlab("Treatment Exposure") +
+  theme(panel.background = element_rect(fill = "transparent", colour = NA), 
+        plot.background = element_rect(fill= "transparent", colour = NA), text=element_text(size=18))
+        
+        
+boxplot + scale_x_discrete(labels=c("control" = "Control", "low_salinity" = "Low Salinity", "high_temp"= "High Temperature"))
+ggsave(plot = last_plot(), filename = "boxplotlightningtalk.jpg")
+
+#ggplot(snailed_it, aes(x = Exposure, y = Percent_survival, fill = Species)) + 
+#    geom_point(aes(colour = Species), position = position_jitterdodge()) +
+#    geom_boxplot(alpha = 0.8) +
+    scale_color_manual(values = my_cols) +
+    scale_fill_manual(values = my_cols)
+    plot_name + scale_x_discrete(labels=c("Control" = "Control", "Mass_Mortality" = "Mass Mortality", "Cleared" = "Cleared"))
+```
+
+
+## Make a scatterplot showing the treatments over the course of the experiment
+```{r}
+
+```
+
+# Stats
+
+## Total growth
+
+### Check for normality
+```{r}
+growth_total_ds <- tube_growth %>%
+  select(total_growth_DS)
+
+shapiro.test(total_growth_DS)
+```
+
+### histogram and qqplot
+```{r}
+hist(growth_total)
+
+qqnorm(growth_total)
+qqline(growth_total)
+```
+
+### Finding distribution of data
+```{r}
+descdist(tube_growth$total_growth)
+```
+
+
+
+### Anova
+```{r}
+aov_total_growth <- aov(total_growth ~ treatment + (1|worm_id)+ (1|amt_cut_mm), data = tube-growth)
+```
+
+
+## Timestep growth
+
+#### check for normality
+```{r}
+# first timestep
+growth_ts_1 <- tube-growth %>%
+  select(growth_1)
+
+shapiro.test(growth_ts_1)
+
+# second timestep
+growth_ts_2 <- tube-growth %>%
+  select(growth_2)
+
+# trying to gaussianize the growth_2 distribution to make it normal (also tried with defalt type for gaussianize function)
+
+transform_2 <- Gaussianize(tube_growth$growth_2, type = "hh") 
+
+hist(transform_2)
+
+shapiro.test(transform_2)
+
+shapiro.test(growth_ts_2)
+
+# third timestep
+growth_ts_3 <- tube-growth %>%
+  select(growth_3)
+
+shapiro.test(growth_ts_3)
+
+# fourth timestep
+growth_ts_4 <- tube-growth %>%
+  select(growth_4)
+
+shapiro.test(growth_ts_4)
+```
+
+#### histogram and qqplot
+```{r}
+# first timestep
+hist(growth_ts_1)
+
+qqnorm(growth_ts_1)
+qqline(growth_ts_1)
+
+# second timestep
+hist(growth_ts_2)
+
+qqnorm(growth_ts_2)
+qqline(growth_ts_2)
+
+# third timestep
+hist(growth_ts_3)
+
+qqnorm(growth_ts_3)
+qqline(growth_ts_3)
+
+# fourth timestep
+hist(growth_ts_4)
+
+qqnorm(growth_ts_4)
+qqline(growth_ts_4)
+
+```
+
+#### Finding distribution of data
+```{r}
+# first timestep
+descdist(tube-growth$growth_1)
+
+# second timestep
+descdist(tube-growth$growth_2)
+
+# third timestep
+descdist(tube-growth$growth_3)
+
+# fourth timestep
+descdist(tube-growth$growth_4)
+
+```
+
+
+
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
